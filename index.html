@@ -159,6 +159,13 @@
                 const data = snap.val(); if(!data) return;
                 if(data.letter) document.getElementById('game-letter').innerText = data.letter;
 
+                // DETECCIÓN DE TODOS BASTA PARA PARAR CRONÓMETRO
+                const totalPlayers = Object.keys(data.players || {}).length;
+                if (data.bastaCount >= totalPlayers && data.status === 'timer') {
+                    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                    stopTimerAndEnd();
+                }
+
                 if (data.status !== 'timer' && data.status !== 'playing') {
                     document.getElementById('timer-banner').classList.add('hidden');
                     document.getElementById('basta-big').classList.add('hidden');
@@ -326,7 +333,6 @@
                     let max = Math.max(...Object.values(counts));
                     let winners = Object.keys(counts).filter(k => counts[k] == max);
 
-                    // --- RULETA DE LA JUSTICIA (DESEMPATE) ---
                     if(winners.length > 1) {
                         document.getElementById('tie-breaker').classList.remove('hidden');
                         let tieInt = setInterval(() => {
