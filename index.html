@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="es">
-<head>  
-    <meta charset="UTF-8"> 
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BASTA EXTREME - RULETA VISUAL</title>
     <link rel="icon" type="image/png" href="BASTA.png">
@@ -15,7 +14,7 @@
         .hidden { display: none !important; }
         .card { background: #2f3542; padding: 25px; border-radius: 20px; max-width: 500px; margin: 20px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
         
-        .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; background: var(--b); padding: 10px; border-radius: 15px; }
+        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; background: var(--b); padding: 10px; border-radius: 15px; }
         .av-item { font-size: 30px; cursor: pointer; padding: 5px; border-radius: 10px; border: 3px solid transparent; transition: 0.2s; }
         .av-item.selected { border-color: var(--g); background: rgba(255,165,2,0.3); transform: scale(1.1); }
 
@@ -23,28 +22,28 @@
 
         button { padding: 15px; border-radius: 12px; border: none; background: var(--a); color: white; font-weight: bold; cursor: pointer; margin: 5px; font-size: 16px; width: 90%; transition: 0.2s; }
         button:active { transform: scale(0.95); }
-        input { padding: 12px; border-radius: 8px; border: none; width: 85%; margin: 8px 0; font-size: 16px; outline: none; }
+        input { padding: 12px; border-radius: 8px; border: none; width: 85%; margin: 8px 0; font-size: 16px; outline: none; color: black; }
         
         .cat-tag { display: inline-flex; align-items: center; background: var(--b); padding: 5px 12px; border-radius: 20px; margin: 5px; font-size: 14px; }
         .btn-del { color: var(--a); margin-left: 8px; cursor: pointer; font-weight: bold; }
-
         .ruleta-txt { font-size: 120px; font-weight: 900; color: var(--g); margin: 20px; height: 140px; text-shadow: 0 0 20px var(--g); }
 
-        .vote-card { background: #1e222b; padding: 15px; border-radius: 15px; margin: 15px 0; position: relative; }
+        .vote-card { background: #1e222b; padding: 15px; border-radius: 15px; margin: 15px 0; }
         .vote-btn { width: 60px; background: var(--b); display: inline-block; }
         .vote-btn.selected { background: var(--s); box-shadow: 0 0 15px var(--s); border: 2px solid white; }
 
-        .podio-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; margin: 10px 0; border-radius: 12px; background: var(--b); border: 1px solid rgba(255,255,255,0.05); }
-        .rank-1 { background: var(--g); color: black; font-weight: bold; box-shadow: 0 0 20px var(--g); }
+        .podio-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; margin: 10px 0; border-radius: 12px; background: var(--b); }
+        .rank-1 { background: var(--g); color: black; font-weight: bold; }
 
-        #tie-breaker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #13171b; border: 4px solid var(--g); padding: 30px; border-radius: 25px; z-index: 3000; min-width: 250px; box-shadow: 0 0 50px black; }
+        #tie-breaker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #13171b; border: 4px solid var(--g); padding: 30px; border-radius: 25px; z-index: 3000; min-width: 250px; }
         .blink { animation: blinker 0.5s linear infinite; color: var(--g); font-weight: bold; }
         @keyframes blinker { 50% { opacity: 0; } }
-   
+        
+        #basta-big { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 80px; background: var(--a); padding: 40px; border-radius: 20px; z-index: 2000; font-weight: bold; }
         .basta-anim { animation: popBasta 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popBasta {
             0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.3); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
             100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
     </style>
@@ -83,20 +82,19 @@
     <div id="scr-vote" class="card hidden">
         <h2 id="vote-cat-label" style="color:var(--g)">-</h2>
         <div id="vote-area"></div>
-        <button id="admin-next-cat" class="hidden" onclick="processVoteCategory()" style="background:var(--g); color:black">SIGUIENTE CATEGORÍA</button>
+        <button id="admin-next-cat" class="hidden" onclick="processVoteCategory()" style="background:var(--g); color:black">SIGUIENTE</button>
     </div>
 
     <div id="scr-podium" class="card hidden">
-        <h1>🏆 RESULTADOS FINALES</h1>
+        <h1>🏆 RESULTADOS</h1>
         <div id="podium-list"></div>
-        <button id="admin-replay" class="hidden" onclick="resetForNewRound()" style="background:var(--s)">SIGUIENTE LETRA</button>
+        <button id="admin-replay" class="hidden" onclick="resetForNewRound()" style="background:var(--s)">OTRA RONDA</button>
     </div>
 
-    <div id="basta-big" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:80px; background:var(--a); padding:40px; border-radius:20px; z-index:2000; font-weight:bold;">¡BASTA!</div>
+    <div id="basta-big" class="hidden">¡BASTA!</div>
     
     <div id="tie-breaker" class="hidden">
-        <div class="blink">¡EMPATE DETECTADO!</div>
-        <p>Girando Ruleta de Justicia...</p>
+        <div class="blink">¡EMPATE!</div>
         <div id="tie-result" style="font-size: 50px; font-weight: 900; color: var(--s);">---</div>
     </div>
 
@@ -130,64 +128,56 @@
             });
         };
 
+        function showScreen(id) {
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
         function createRoom() {
-            myName = document.getElementById('in-name').value;
+            myName = document.getElementById('in-name').value.trim();
             if(!myName || !myAvatar) return alert("Nombre y Avatar requeridos");
             rId = Math.random().toString(36).substring(2,7).toUpperCase();
             isAdmin = true;
             db.ref('rooms/'+rId).set({
                 status: 'lobby', admin: myName,
-                categories: ['Nombre', 'Color', 'Cosa', 'Fruta'],
+                categories: ['Nombre', 'Color', 'Cosa'],
                 bastaCount: 0, letter: '?'
             }).then(init);
         }
 
         function joinRoom() {
-            myName = document.getElementById('in-name').value;
-            rId = document.getElementById('in-code').value.toUpperCase();
+            myName = document.getElementById('in-name').value.trim();
+            rId = document.getElementById('in-code').value.toUpperCase().trim();
             if(!myName || !myAvatar || !rId) return alert("Faltan datos");
             init();
         }
 
         function init() {
             db.ref(`rooms/${rId}/players/${myName}`).set({ avatar: myAvatar, totalScore: 0, basta: false });
-            document.getElementById('scr-home').classList.add('hidden');
-            document.getElementById('scr-lobby').classList.remove('hidden');
             document.getElementById('room-id-view').innerText = rId;
             if(isAdmin) document.getElementById('admin-tools').classList.remove('hidden');
 
             db.ref('rooms/'+rId).on('value', snap => {
                 const data = snap.val(); if(!data) return;
                 
-                if(data.letter) document.getElementById('game-letter').innerText = data.letter;
-
-                // --- Limpieza de seguridad del cronómetro ---
-                if (data.status !== 'timer' && data.status !== 'playing') {
-                    document.getElementById('timer-banner').classList.add('hidden');
-                    document.getElementById('basta-big').classList.add('hidden');
-                    if(timerInterval) { 
-                        clearInterval(timerInterval); 
-                        timerInterval = null; 
-                    }
-                }
-
                 if(data.status === 'lobby') { renderLobby(data); resetGameState(); }
                 if(data.status === 'playing') renderGame(data);
                 if(data.status === 'timer') startLocalTimer(data); 
                 if(data.status === 'voting') renderVoting(data);
                 if(data.status === 'podium') renderPodium(data);
+
+                if(data.letter) document.getElementById('game-letter').innerText = data.letter;
             });
         }
 
         function renderLobby(data) {
+            showScreen('scr-lobby');
             document.getElementById('players-lobby').innerHTML = Object.keys(data.players).map(p => `${data.players[p].avatar} ${p}`).join(' | ');
             const cDiv = document.getElementById('cat-container');
             cDiv.innerHTML = '';
             data.categories.forEach((c, idx) => {
                 cDiv.innerHTML += `<span class="cat-tag">${c} ${isAdmin ? `<b class="btn-del" onclick="delCat(${idx})">X</b>` : ''}</span>`;
             });
-            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-            document.getElementById('scr-lobby').classList.remove('hidden');
         }
 
         function addCat() {
@@ -213,7 +203,7 @@
             let int = setInterval(() => {
                 db.ref(`rooms/${rId}/letter`).set(abc[Math.floor(Math.random()*abc.length)]);
                 cycles++;
-                if(cycles > 15) {
+                if(cycles > 12) {
                     clearInterval(int);
                     db.ref(`rooms/${rId}`).update({ status: 'playing', bastaCount: 0 });
                     db.ref(`rooms/${rId}/players`).once('value', s => {
@@ -224,8 +214,7 @@
         }
 
         function renderGame(data) {
-            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-            document.getElementById('scr-game').classList.remove('hidden');
+            showScreen('scr-game');
             const area = document.getElementById('game-fields');
             if(area.innerHTML === "") {
                 data.categories.forEach(c => {
@@ -234,7 +223,6 @@
             }
             const total = Object.keys(data.players).length;
             document.getElementById('btn-basta').innerText = `¡BASTA! (${data.bastaCount || 0}/${total})`;
-            if(data.bastaCount >= total) stopTimerAndEnd();
         }
 
         function pressBasta() {
@@ -251,12 +239,8 @@
         function startLocalTimer(data) {
             renderGame(data);
             if(timerInterval) return; 
-            
-            const banner = document.getElementById('timer-banner');
-            banner.classList.remove('hidden');
-            
+            document.getElementById('timer-banner').classList.remove('hidden');
             let sec = 20;
-            document.getElementById('timer-num').innerText = sec;
             timerInterval = setInterval(() => {
                 sec--;
                 document.getElementById('timer-num').innerText = sec;
@@ -265,58 +249,42 @@
         }
 
         function stopTimerAndEnd() {
-            if(timerInterval) { 
-                clearInterval(timerInterval); 
-                timerInterval = null; 
-            }
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             document.getElementById('timer-banner').classList.add('hidden');
-            
-            const bastaCartel = document.getElementById('basta-big');
-            bastaCartel.classList.remove('hidden');
-            bastaCartel.classList.add('basta-anim');
+            const b = document.getElementById('basta-big');
+            b.classList.remove('hidden'); b.classList.add('basta-anim');
             
             let ans = {};
-            document.querySelectorAll('.in-word').forEach(i => {
-                ans[i.dataset.cat] = i.value || "---";
-                i.value = ""; 
-            });
+            document.querySelectorAll('.in-word').forEach(i => ans[i.dataset.cat] = i.value || "---");
             db.ref(`rooms/${rId}/answers/${myName}`).set(ans);
 
             setTimeout(() => {
-                bastaCartel.classList.add('hidden');
-                bastaCartel.classList.remove('basta-anim'); 
-                if(isAdmin) {
-                    db.ref(`rooms/${rId}`).update({ status: 'voting', currIdx: 0 });
-                }
-            }, 1500); 
+                b.classList.add('hidden');
+                if(isAdmin) db.ref(`rooms/${rId}`).update({ status: 'voting', currIdx: 0 });
+            }, 2000);
         }
 
         function renderVoting(data) {
-            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-            document.getElementById('scr-vote').classList.remove('hidden');
+            showScreen('scr-vote');
             if(isAdmin) document.getElementById('admin-next-cat').classList.remove('hidden');
-            
             const cat = data.categories[data.currIdx];
             document.getElementById('vote-cat-label').innerText = cat.toUpperCase();
-            
             const area = document.getElementById('vote-area');
             area.innerHTML = '';
             if(!data.answers) return;
             Object.keys(data.answers).forEach(p => {
-                const isMe = p === myName;
                 const vts = data.votes?.[cat]?.[p] || {};
                 let voters = Object.entries(vts).map(([v, pts]) => `${v}(${pts})`).join(', ');
-
                 area.innerHTML += `
                     <div class="vote-card">
                         <h3>${data.players[p].avatar} ${p}</h3>
                         <p style="font-size:22px; color:var(--g)">"${data.answers[p][cat]}"</p>
-                        <div ${isMe ? 'style="display:none"' : ''}>
+                        <div ${p===myName?'style="display:none"':''}>
                             <button class="vote-btn ${mySelectedVotes[p]==50?'selected':''}" onclick="sendVote('${p}','${cat}',50)">50</button>
                             <button class="vote-btn ${mySelectedVotes[p]==100?'selected':''}" onclick="sendVote('${p}','${cat}',100)">100</button>
                             <button class="vote-btn ${mySelectedVotes[p]==200?'selected':''}" onclick="sendVote('${p}','${cat}',200)">200</button>
                         </div>
-                        <div style="font-size:12px; opacity:0.6; margin-top:5px">Votos: ${voters || '---'}</div>
+                        <div style="font-size:11px; opacity:0.5">Votos: ${voters || '---'}</div>
                     </div>`;
             });
         }
@@ -330,66 +298,45 @@
             const snap = await db.ref(`rooms/${rId}`).once('value');
             const d = snap.val();
             const cat = d.categories[d.currIdx];
-            
             for (let p in d.players) {
                 const vArray = Object.values(d.votes?.[cat]?.[p] || {});
                 if(vArray.length > 0) {
-                    let counts = {};
-                    vArray.forEach(v => counts[v] = (counts[v] || 0) + 1);
+                    let counts = {}; vArray.forEach(v => counts[v] = (counts[v] || 0) + 1);
                     let max = Math.max(...Object.values(counts));
                     let winners = Object.keys(counts).filter(k => counts[k] == max);
-                    
-                    let final;
-                    if(winners.length > 1) {
-                        document.getElementById('tie-breaker').classList.remove('hidden');
-                        final = await runTieBreaker(winners);
-                        document.getElementById('tie-breaker').classList.add('hidden');
-                    } else {
-                        final = parseInt(winners[0]);
-                    }
+                    let final = winners.length > 1 ? await runTieBreaker(winners) : parseInt(winners[0]);
                     db.ref(`rooms/${rId}/players/${p}/totalScore`).transaction(c => (c||0) + final);
                 }
             }
-
             if(d.currIdx < d.categories.length - 1) {
-                mySelectedVotes = {};
-                db.ref(`rooms/${rId}/currIdx`).set(d.currIdx + 1);
-            } else {
-                db.ref(`rooms/${rId}/status`).set('podium');
-            }
+                mySelectedVotes = {}; db.ref(`rooms/${rId}/currIdx`).set(d.currIdx + 1);
+            } else { db.ref(`rooms/${rId}/status`).set('podium'); }
         }
 
         function runTieBreaker(options) {
             return new Promise(resolve => {
-                let i = 0;
-                const display = document.getElementById('tie-result');
-                let int = setInterval(() => {
-                    display.innerText = options[i % options.length];
-                    i++;
-                }, 100);
+                document.getElementById('tie-breaker').classList.remove('hidden');
+                let i = 0; const display = document.getElementById('tie-result');
+                let int = setInterval(() => { display.innerText = options[i++ % options.length]; }, 100);
                 setTimeout(() => {
                     clearInterval(int);
-                    let winner = options[Math.floor(Math.random() * options.length)];
-                    display.innerText = winner;
-                    setTimeout(() => resolve(parseInt(winner)), 1500);
+                    let w = options[Math.floor(Math.random()*options.length)];
+                    display.innerText = w;
+                    setTimeout(() => { document.getElementById('tie-breaker').classList.add('hidden'); resolve(parseInt(w)); }, 1200);
                 }, 2000);
             });
         }
 
         function renderPodium(data) {
-            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-            document.getElementById('scr-podium').classList.remove('hidden');
+            showScreen('scr-podium');
             if(isAdmin) document.getElementById('admin-replay').classList.remove('hidden');
             const sorted = Object.keys(data.players).sort((a,b) => data.players[b].totalScore - data.players[a].totalScore);
             const list = document.getElementById('podium-list');
-            list.innerHTML = '';
-            sorted.forEach((p, i) => {
-                list.innerHTML += `
-                    <div class="podio-item ${i==0?'rank-1':''}">
-                        <span>#${i+1} ${data.players[p].avatar} ${p}</span>
-                        <span>${data.players[p].totalScore} pts</span>
-                    </div>`;
-            });
+            list.innerHTML = sorted.map((p, i) => `
+                <div class="podio-item ${i==0?'rank-1':''}">
+                    <span>#${i+1} ${data.players[p].avatar} ${p}</span>
+                    <span>${data.players[p].totalScore} pts</span>
+                </div>`).join('');
         }
 
         function resetForNewRound() {
@@ -399,13 +346,8 @@
         function resetGameState() {
             document.getElementById('game-fields').innerHTML = "";
             document.getElementById('timer-banner').classList.add('hidden');
-            document.getElementById('timer-num').innerText = "20";
-            if(timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             mySelectedVotes = {};
-            document.getElementById('basta-big').classList.add('hidden');
         }
     </script>
 </body>
