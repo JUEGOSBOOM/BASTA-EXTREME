@@ -175,25 +175,24 @@ function init() {
         
         if(data.letter) document.getElementById('game-letter').innerText = data.letter;
 
-        // --- LIMPIEZA AUTOMÁTICA DE RELOJ Y CARTEL ---
+        // --- MANTÉN ESTE BLOQUE: Es el que evita que el cronómetro se quede "pegado" o se repita ---
         if (data.status !== 'timer' && data.status !== 'playing') {
             document.getElementById('timer-banner').classList.add('hidden');
             document.getElementById('basta-big').classList.add('hidden');
-            document.getElementById('basta-big').classList.remove('basta-anim');
             if(timerInterval) { 
                 clearInterval(timerInterval); 
                 timerInterval = null; 
             }
         }
 
+        // --- Lógica de estados ---
         if(data.status === 'lobby') { renderLobby(data); resetGameState(); }
         if(data.status === 'playing') renderGame(data);
-        if(data.status === 'timer') startLocalTimer(data);
+        if(data.status === 'timer') startLocalTimer(data); // Aquí se lanza el reloj
         if(data.status === 'voting') renderVoting(data);
         if(data.status === 'podium') renderPodium(data);
     });
 }
-
 
 
 
@@ -454,4 +453,5 @@ function resetGameState() {
 </body>
 
 </html>
+
 
