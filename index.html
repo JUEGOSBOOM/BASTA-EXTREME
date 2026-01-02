@@ -1,73 +1,103 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
+<head>  
+    <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BASTA EXTREME - FIXED</title>
+    <title>BASTA EXTREME - RULETA VISUAL</title>
+    <link rel="icon" type="image/png" href="BASTA.png">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
     <style>
         :root { --p: #1e272e; --a: #ff3f34; --g: #ffa502; --s: #05c46b; --b: #3d4451; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--p); color: white; text-align: center; margin: 0; padding-bottom: 30px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--p); color: white; text-align: center; margin: 0; padding-bottom: 50px; }
         .hidden { display: none !important; }
-        .card { background: #2f3542; padding: 25px; border-radius: 20px; max-width: 450px; margin: 20px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
-        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; background: var(--b); padding: 10px; border-radius: 12px; }
-        .av-item { font-size: 32px; cursor: pointer; padding: 5px; border-radius: 8px; border: 3px solid transparent; transition: 0.3s; }
-        .av-item.selected { border-color: var(--g); background: rgba(255,165,2,0.2); transform: scale(1.1); }
-        #timer-banner { position: fixed; top: 0; left: 0; width: 100%; background: var(--a); padding: 12px; font-weight: bold; font-size: 20px; z-index: 5000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        button { padding: 15px; border-radius: 12px; border: none; background: var(--a); color: white; font-weight: bold; cursor: pointer; width: 95%; margin: 8px 0; font-size: 16px; }
-        input { padding: 12px; border-radius: 8px; border: none; width: 85%; margin: 10px 0; font-size: 16px; color: #000; }
-        .ruleta-txt { font-size: 110px; color: var(--g); font-weight: 900; margin: 10px 0; text-shadow: 0 0 15px var(--g); }
-        .in-word-container { margin: 15px 0; text-align: left; width: 90%; margin-left: auto; margin-right: auto; }
-        .in-word-container label { font-weight: bold; color: var(--g); display: block; margin-bottom: 5px; }
-        .vote-card { background: #1e222b; padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px solid rgba(255,255,255,0.1); }
-        #basta-big { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 80px; background: var(--a); padding: 40px; border-radius: 25px; z-index: 9999; font-weight: 900; border: 5px solid white; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .card { background: #2f3542; padding: 25px; border-radius: 20px; max-width: 500px; margin: 20px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 20px 0; background: var(--b); padding: 10px; border-radius: 15px; }
+        .av-item { font-size: 30px; cursor: pointer; padding: 5px; border-radius: 10px; border: 3px solid transparent; transition: 0.2s; }
+        .av-item.selected { border-color: var(--g); background: rgba(255,165,2,0.3); transform: scale(1.1); }
+
+        #timer-banner { position: fixed; top: 0; left: 0; width: 100%; background: var(--a); color: white; padding: 10px; font-size: 24px; font-weight: bold; z-index: 1000; }
+
+        button { padding: 15px; border-radius: 12px; border: none; background: var(--a); color: white; font-weight: bold; cursor: pointer; margin: 5px; font-size: 16px; width: 90%; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
+        input { padding: 12px; border-radius: 8px; border: none; width: 85%; margin: 8px 0; font-size: 16px; outline: none; color: black; }
+        
+        .cat-tag { display: inline-flex; align-items: center; background: var(--b); padding: 5px 12px; border-radius: 20px; margin: 5px; font-size: 14px; }
+        .btn-del { color: var(--a); margin-left: 8px; cursor: pointer; font-weight: bold; }
+
+        .ruleta-txt { font-size: 120px; font-weight: 900; color: var(--g); margin: 20px; height: 140px; text-shadow: 0 0 20px var(--g); }
+
+        .vote-card { background: #1e222b; padding: 15px; border-radius: 15px; margin: 15px 0; position: relative; }
+        .vote-btn { width: 60px; background: var(--b); display: inline-block; }
+        .vote-btn.selected { background: var(--s); box-shadow: 0 0 15px var(--s); border: 2px solid white; }
+
+        .podio-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; margin: 10px 0; border-radius: 12px; background: var(--b); border: 1px solid rgba(255,255,255,0.05); }
+        .rank-1 { background: var(--g); color: black; font-weight: bold; box-shadow: 0 0 20px var(--g); }
+
+        #tie-breaker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #13171b; border: 4px solid var(--g); padding: 30px; border-radius: 25px; z-index: 3000; min-width: 250px; box-shadow: 0 0 50px black; }
+        .blink { animation: blinker 0.5s linear infinite; color: var(--g); font-weight: bold; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .basta-anim { animation: popBasta 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popBasta {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="timer-banner" class="hidden">🚨 TIEMPO: <span id="timer-num">20</span>s 🚨</div>
+    <div id="timer-banner" class="hidden">TIEMPO RESTANTE: <span id="timer-num">20</span>s</div>
 
     <div id="scr-home" class="card">
         <h1>¡BASTA! EXTREME</h1>
         <input type="text" id="in-name" placeholder="Tu Apodo">
-        <p>Elige tu Avatar:</p>
+        <h3>Elige Avatar:</h3>
         <div class="avatar-grid" id="av-selector"></div>
-        <button onclick="createRoom()">CREAR NUEVA SALA</button>
-        <hr style="opacity: 0.2; margin: 20px 0;">
+        <button onclick="createRoom()">CREAR SALA</button>
         <input type="text" id="in-code" placeholder="Código de Sala">
-        <button onclick="joinRoom()" style="background:var(--s)">UNIRME A SALA</button>
+        <button onclick="joinRoom()" style="background:var(--s)">UNIRSE</button>
     </div>
 
     <div id="scr-lobby" class="card hidden">
-        <h2 style="margin-top:0">SALA: <span id="room-id-view" style="color:var(--g)"></span></h2>
-        <div id="players-lobby" style="margin: 15px 0; font-size: 18px;"></div>
-        <div id="cat-container" style="margin-bottom: 20px;"></div>
+        <h2>SALA: <span id="room-id-view" style="color:var(--g)"></span></h2>
+        <div id="players-lobby" style="margin-bottom:15px; font-weight: bold;"></div>
+        <div id="cat-container"></div>
         <div id="admin-tools" class="hidden">
-            <button onclick="startRoulette()" style="background:var(--g); color:black">🎰 GIRAR RULETA Y EMPEZAR</button>
+            <input type="text" id="new-cat-in" placeholder="Nueva categoría..." style="width: 60%;">
+            <button onclick="addCat()" style="width:20%">+</button>
+            <button onclick="startRoulette()" style="background:var(--g); color:black; margin-top:15px">GIRAR RULETA Y JUGAR</button>
         </div>
-        <p id="wait-msg" style="font-style: italic; opacity: 0.7;">Esperando al administrador...</p>
     </div>
 
     <div id="scr-game" class="card hidden">
         <div id="game-letter" class="ruleta-txt">?</div>
         <div id="game-fields"></div>
-        <button id="btn-basta" onclick="pressBasta()" style="background:white; color:black; font-size: 20px; margin-top: 20px;">¡BASTA! (0/0)</button>
+        <button id="btn-basta" onclick="pressBasta()" style="background:white; color:black; font-size:20px">¡BASTA! (0/0)</button>
     </div>
 
     <div id="scr-vote" class="card hidden">
-        <h2 id="vote-cat-label" style="color:var(--g)"></h2>
+        <h2 id="vote-cat-label" style="color:var(--g)">-</h2>
         <div id="vote-area"></div>
-        <button id="admin-next-cat" class="hidden" onclick="processVoteCategory()" style="background:var(--g); color:black">SIGUIENTE CATEGORÍA ➡️</button>
+        <button id="admin-next-cat" class="hidden" onclick="processVoteCategory()" style="background:var(--g); color:black">SIGUIENTE CATEGORÍA</button>
     </div>
 
     <div id="scr-podium" class="card hidden">
-        <h1>🏆 RESULTADOS 🏆</h1>
-        <div id="podium-list" style="font-size: 22px; line-height: 2;"></div>
-        <button id="admin-replay" class="hidden" onclick="resetForNewRound()" style="background:var(--s); margin-top:20px">JUGAR OTRA LETRA</button>
+        <h1>🏆 RESULTADOS FINALES</h1>
+        <div id="podium-list"></div>
+        <button id="admin-replay" class="hidden" onclick="resetForNewRound()" style="background:var(--s)">SIGUIENTE LETRA</button>
     </div>
 
-    <div id="basta-big" class="hidden">¡BASTA!</div>
+    <div id="basta-big" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:80px; background:var(--a); padding:40px; border-radius:20px; z-index:2000; font-weight:bold;">¡BASTA!</div>
+
+    <div id="tie-breaker" class="hidden">
+        <div class="blink">¡EMPATE DETECTADO!</div>
+        <p>Girando Ruleta de Justicia...</p>
+        <div id="tie-result" style="font-size: 50px; font-weight: 900; color: var(--s);">---</div>
+    </div>
 
     <script>
         const firebaseConfig = {
@@ -83,93 +113,101 @@
 
         const avatars = ["🦊","🐼","🐸","🤖","🐱","🐶","🦁","🐙","🐨","🦄","🐷","🐹"];
         let myName, myAvatar, rId, isAdmin = false;
+        let mySelectedVotes = {};
         let timerInterval = null;
-        let currentStatus = "";
 
-        // Generar avatares al cargar
-        const grid = document.getElementById('av-selector');
-        avatars.forEach(a => {
-            const s = document.createElement('span');
-            s.className = 'av-item'; s.innerText = a;
-            s.onclick = () => {
-                document.querySelectorAll('.av-item').forEach(x => x.classList.remove('selected'));
-                s.classList.add('selected'); myAvatar = a;
-            };
-            grid.appendChild(s);
-        });
-
-        function showScreen(id) {
-            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
+        window.onload = () => {
+            const grid = document.getElementById('av-selector');
+            avatars.forEach(a => {
+                const s = document.createElement('span');
+                s.className = 'av-item'; s.innerText = a;
+                s.onclick = () => {
+                    document.querySelectorAll('.av-item').forEach(x => x.classList.remove('selected'));
+                    s.classList.add('selected'); myAvatar = a;
+                };
+                grid.appendChild(s);
+            });
+        };
 
         function createRoom() {
-            myName = document.getElementById('in-name').value.trim();
+            myName = document.getElementById('in-name').value;
             if(!myName || !myAvatar) return alert("Nombre y Avatar requeridos");
             rId = Math.random().toString(36).substring(2,7).toUpperCase();
             isAdmin = true;
             db.ref('rooms/'+rId).set({
                 status: 'lobby', admin: myName,
                 categories: ['Nombre', 'Color', 'Cosa', 'Fruta'],
-                bastaCount: 0, letter: '?',
-                timestamp: Date.now()
-            }).then(() => init());
+                bastaCount: 0, letter: '?'
+            }).then(init);
         }
 
         function joinRoom() {
-            myName = document.getElementById('in-name').value.trim();
-            rId = document.getElementById('in-code').value.toUpperCase().trim();
+            myName = document.getElementById('in-name').value;
+            rId = document.getElementById('in-code').value.toUpperCase();
             if(!myName || !myAvatar || !rId) return alert("Faltan datos");
             init();
         }
 
         function init() {
             db.ref(`rooms/${rId}/players/${myName}`).set({ avatar: myAvatar, totalScore: 0, basta: false });
+            document.getElementById('scr-home').classList.add('hidden');
+            document.getElementById('scr-lobby').classList.remove('hidden');
             document.getElementById('room-id-view').innerText = rId;
-            
+            if(isAdmin) document.getElementById('admin-tools').classList.remove('hidden');
+
             db.ref('rooms/'+rId).on('value', snap => {
                 const data = snap.val(); if(!data) return;
-                
-                // Control de Admin Tools
-                if(isAdmin) {
-                    document.getElementById('admin-tools').classList.remove('hidden');
-                    document.getElementById('wait-msg').classList.add('hidden');
-                }
-
-                // Cambios de estado (Solo si el estado cambió)
-                if(data.status !== currentStatus) {
-                    currentStatus = data.status;
-                    if(data.status === 'lobby') { showScreen('scr-lobby'); resetGameState(); }
-                    if(data.status === 'playing') { showScreen('scr-game'); renderFields(data); }
-                    if(data.status === 'voting') { showScreen('scr-vote'); renderVoting(data); }
-                    if(data.status === 'podium') { showScreen('scr-podium'); renderPodium(data); }
-                }
-
-                // Lógica del Timer (Separada del cambio de pantalla)
-                if(data.status === 'timer') {
-                    startLocalTimer();
-                }
-
                 if(data.letter) document.getElementById('game-letter').innerText = data.letter;
-                
-                // Actualizar contador de jugadores en Lobby y Botón Basta
-                if(data.players) {
-                    const pList = Object.keys(data.players);
-                    document.getElementById('players-lobby').innerHTML = pList.map(p => `${data.players[p].avatar} ${p}`).join(' | ');
-                    document.getElementById('btn-basta').innerText = `¡BASTA! (${data.bastaCount || 0}/${pList.length})`;
-                    
-                    if(data.status === 'lobby') {
-                        document.getElementById('cat-container').innerHTML = data.categories.map(c => `<span class="cat-tag">${c}</span>`).join('');
-                    }
+
+                const totalPlayers = Object.keys(data.players || {}).length;
+                if (data.bastaCount >= totalPlayers && totalPlayers > 0 && data.status === 'timer') {
+                    stopTimerAndEnd();
                 }
+
+                if (data.status !== 'timer' && data.status !== 'playing') {
+                    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                    document.getElementById('timer-banner').classList.add('hidden');
+                }
+
+                if(data.status === 'lobby') { renderLobby(data); resetGameState(); }
+                if(data.status === 'playing') renderGame(data);
+                if(data.status === 'timer') startLocalTimer(data);
+                if(data.status === 'voting') renderVoting(data);
+                if(data.status === 'podium') renderPodium(data);
             });
         }
 
-        function renderFields(data) {
-            const area = document.getElementById('game-fields');
-            area.innerHTML = ""; // Limpiar siempre
-            data.categories.forEach(c => {
-                area.innerHTML += `<div class="in-word-container"><label>${c}</label><input type="text" class="in-word" data-cat="${c}" placeholder="Escribe aquí..."></div>`;
+        function renderLobby(data) {
+            document.getElementById('players-lobby').innerHTML = Object.keys(data.players).map(p => `${data.players[p].avatar} ${p}`).join(' | ');
+            const cDiv = document.getElementById('cat-container');
+            cDiv.innerHTML = '';
+            data.categories.forEach((c, idx) => {
+                cDiv.innerHTML += `<span class="cat-tag">${c} ${isAdmin ? `<b class="btn-del" onclick="delCat(${idx})">X</b>` : ''}</span>`;
+            });
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById('scr-lobby').classList.remove('hidden');
+        }
+
+        function resetGameState() {
+            document.getElementById('game-fields').innerHTML = "";
+            mySelectedVotes = {};
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        }
+
+        function addCat() {
+            const v = document.getElementById('new-cat-in').value;
+            if(!v) return;
+            db.ref(`rooms/${rId}/categories`).once('value', s => {
+                let cats = s.val() || []; cats.push(v);
+                db.ref(`rooms/${rId}/categories`).set(cats);
+                document.getElementById('new-cat-in').value = "";
+            });
+        }
+
+        function delCat(i) {
+            db.ref(`rooms/${rId}/categories`).once('value', s => {
+                let cats = s.val(); cats.splice(i,1);
+                db.ref(`rooms/${rId}/categories`).set(cats);
             });
         }
 
@@ -178,10 +216,10 @@
             let cycles = 0;
             let int = setInterval(() => {
                 db.ref(`rooms/${rId}/letter`).set(abc[Math.floor(Math.random()*abc.length)]);
-                if(++cycles > 12) {
+                cycles++;
+                if(cycles > 15) {
                     clearInterval(int);
-                    db.ref(`rooms/${rId}`).update({ status: 'playing', bastaCount: 0, answers: null });
-                    // Resetear el estado "basta" de todos
+                    db.ref(`rooms/${rId}`).update({ status: 'playing', bastaCount: 0 });
                     db.ref(`rooms/${rId}/players`).once('value', s => {
                         s.forEach(p => db.ref(`rooms/${rId}/players/${p.key}/basta`).set(false));
                     });
@@ -189,37 +227,42 @@
             }, 100);
         }
 
-        function pressBasta() {
-            // Desactivar botón para evitar multi-clic
-            document.getElementById('btn-basta').disabled = true;
-            
-            db.ref(`rooms/${rId}/players/${myName}/basta`).set(true).then(() => {
-                db.ref(`rooms/${rId}`).once('value', s => {
-                    const d = s.val();
-                    const players = Object.values(d.players);
-                    const count = players.filter(p => p.basta).length;
-                    
-                    db.ref(`rooms/${rId}/bastaCount`).set(count);
-                    
-                    if(count === 1 && d.status !== 'timer') {
-                        db.ref(`rooms/${rId}/status`).set('timer');
-                    }
-                    if(count >= players.length) {
-                        stopTimerAndEnd();
-                    }
+        function renderGame(data) {
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById('scr-game').classList.remove('hidden');
+            const area = document.getElementById('game-fields');
+            if(area.innerHTML === "") {
+                data.categories.forEach(c => {
+                    area.innerHTML += `<div><label>${c}</label><br><input type="text" class="in-word" data-cat="${c}"></div>`;
                 });
+            }
+            const total = Object.keys(data.players).length;
+            document.getElementById('btn-basta').innerText = `¡BASTA! (${data.bastaCount || 0}/${total})`;
+        }
+
+        function pressBasta() {
+            db.ref(`rooms/${rId}/players/${myName}/basta`).set(true);
+            db.ref(`rooms/${rId}`).once('value', s => {
+                const d = s.val();
+                let count = Object.values(d.players).filter(p => p.basta).length;
+                let total = Object.keys(d.players).length;
+                db.ref(`rooms/${rId}/bastaCount`).set(count);
+                if(count === 1 && d.status !== 'timer') db.ref(`rooms/${rId}/status`).set('timer');
+                if(count >= total) stopTimerAndEnd();
             });
         }
 
-        function startLocalTimer() {
-            if(timerInterval) return; 
+        function startLocalTimer(data) {
+            renderGame(data);
+            if(timerInterval || data.status !== 'timer') return;
             document.getElementById('timer-banner').classList.remove('hidden');
             let sec = 20;
-            document.getElementById('timer-num').innerText = sec;
             timerInterval = setInterval(() => {
                 sec--;
                 document.getElementById('timer-num').innerText = sec;
                 if(sec <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
                     stopTimerAndEnd();
                 }
             }, 1000);
@@ -228,82 +271,115 @@
         function stopTimerAndEnd() {
             if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             document.getElementById('timer-banner').classList.add('hidden');
-            document.getElementById('basta-big').classList.remove('hidden');
             
+            const bastaCartel = document.getElementById('basta-big');
+            bastaCartel.classList.remove('hidden');
+            
+            // CORRECCIÓN AQUÍ: Guardamos las respuestas ANTES de limpiar el input
             let ans = {};
             document.querySelectorAll('.in-word').forEach(i => {
                 ans[i.dataset.cat] = i.value.trim() || "---";
             });
-            
             db.ref(`rooms/${rId}/answers/${myName}`).set(ans);
 
+            // Limpiamos los inputs después de haber enviado los datos
             setTimeout(() => {
-                document.getElementById('basta-big').classList.add('hidden');
+                document.querySelectorAll('.in-word').forEach(i => i.value = "");
+                bastaCartel.classList.add('hidden');
                 if(isAdmin) db.ref(`rooms/${rId}`).update({ status: 'voting', currIdx: 0 });
-            }, 2500);
+            }, 1500); 
         }
 
         function renderVoting(data) {
-            const cat = data.categories[data.currIdx];
-            document.getElementById('vote-cat-label').innerText = "VOTANDO: " + cat.toUpperCase();
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById('scr-vote').classList.remove('hidden');
             if(isAdmin) document.getElementById('admin-next-cat').classList.remove('hidden');
-            
+            const cat = data.categories[data.currIdx];
+            if(!cat) return;
+            document.getElementById('vote-cat-label').innerText = cat.toUpperCase();
             const area = document.getElementById('vote-area');
             area.innerHTML = '';
-            if(!data.answers) return;
-
-            Object.keys(data.answers).forEach(p => {
-                const points = (data.players[p].tempScore || 0);
+            Object.keys(data.answers || {}).forEach(p => {
+                const isMe = p === myName;
+                const word = data.answers[p][cat] || "---";
                 area.innerHTML += `
                     <div class="vote-card">
                         <h3>${data.players[p].avatar} ${p}</h3>
-                        <p style="font-size:24px; font-weight:bold; color:var(--g)">"${data.answers[p][cat]}"</p>
-                        <button onclick="addPoint('${p}')" style="background:var(--s); width:auto; padding:10px 20px">+100 PTS</button>
+                        <p style="font-size:22px; color:var(--g)">"${word}"</p>
+                        <div ${isMe ? 'style="display:none"' : ''}>
+                            <button class="vote-btn ${mySelectedVotes[p]==50?'selected':''}" onclick="sendVote('${p}','${cat}',50)">50</button>
+                            <button class="vote-btn ${mySelectedVotes[p]==100?'selected':''}" onclick="sendVote('${p}','${cat}',100)">100</button>
+                            <button class="vote-btn ${mySelectedVotes[p]==200?'selected':''}" onclick="sendVote('${p}','${cat}',200)">200</button>
+                        </div>
                     </div>`;
             });
         }
 
-        function addPoint(target) {
-            db.ref(`rooms/${rId}/players/${target}/totalScore`).transaction(s => (s || 0) + 100);
-            alert("Puntos enviados a " + target);
+        function sendVote(target, cat, pts) {
+            mySelectedVotes[target] = pts;
+            db.ref(`rooms/${rId}/votes/${cat}/${target}/${myName}`).set(pts);
         }
 
-        function processVoteCategory() {
-            db.ref(`rooms/${rId}`).once('value', s => {
-                const d = s.val();
-                if(d.currIdx < d.categories.length - 1) {
-                    db.ref(`rooms/${rId}/currIdx`).set(d.currIdx + 1);
-                } else {
-                    db.ref(`rooms/${rId}/status`).set('podium');
+        async function processVoteCategory() {
+            const snap = await db.ref(`rooms/${rId}`).once('value');
+            const d = snap.val();
+            const cat = d.categories[d.currIdx];
+            
+            for (let p in d.players) {
+                const vArray = Object.values(d.votes?.[cat]?.[p] || {});
+                if(vArray.length > 0) {
+                    let counts = {};
+                    vArray.forEach(v => counts[v] = (counts[v] || 0) + 1);
+                    let max = Math.max(...Object.values(counts));
+                    let winners = Object.keys(counts).filter(k => counts[k] == max);
+
+                    if(winners.length > 1) {
+                        document.getElementById('tie-breaker').classList.remove('hidden');
+                        let tieInt = setInterval(() => {
+                            document.getElementById('tie-result').innerText = winners[Math.floor(Math.random()*winners.length)];
+                        }, 50);
+                        await new Promise(r => setTimeout(r, 1500));
+                        clearInterval(tieInt);
+                        const final = parseInt(document.getElementById('tie-result').innerText);
+                        db.ref(`rooms/${rId}/players/${p}/totalScore`).transaction(c => (c||0) + final);
+                        document.getElementById('tie-breaker').classList.add('hidden');
+                    } else {
+                        const final = parseInt(winners[0]);
+                        db.ref(`rooms/${rId}/players/${p}/totalScore`).transaction(c => (c||0) + final);
+                    }
                 }
-            });
+            }
+
+            if(d.currIdx + 1 < d.categories.length) {
+                db.ref(`rooms/${rId}/currIdx`).set(d.currIdx + 1);
+                mySelectedVotes = {};
+            } else {
+                db.ref(`rooms/${rId}/status`).set('podium');
+            }
         }
 
         function renderPodium(data) {
-            const sorted = Object.keys(data.players).sort((a,b) => data.players[b].totalScore - data.players[a].totalScore);
-            document.getElementById('podium-list').innerHTML = sorted.map((p, i) => `
-                <div style="margin:10px; padding:10px; background:rgba(255,255,255,0.1); border-radius:10px;">
-                    ${i==0?'🥇':''} ${data.players[p].avatar} <b>${p}</b>: ${data.players[p].totalScore} pts
-                </div>
-            `).join('');
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById('scr-podium').classList.remove('hidden');
             if(isAdmin) document.getElementById('admin-replay').classList.remove('hidden');
+            const list = document.getElementById('podium-list');
+            const sorted = Object.entries(data.players).sort((a,b) => b[1].totalScore - a[1].totalScore);
+            list.innerHTML = sorted.map(([name, p], i) => `
+                <div class="podio-item ${i===0?'rank-1':''}">
+                    <span>#${i+1} ${p.avatar} ${name}</span>
+                    <span>${p.totalScore} pts</span>
+                </div>`).join('');
         }
 
         function resetForNewRound() {
-            db.ref(`rooms/${rId}`).update({ 
-                status: 'lobby', 
-                answers: null, 
-                bastaCount: 0, 
-                currIdx: 0, 
-                letter: '?' 
+            db.ref(`rooms/${rId}`).update({
+                status: 'lobby',
+                bastaCount: 0,
+                letter: '?',
+                answers: {},
+                votes: {},
+                currIdx: 0
             });
-        }
-
-        function resetGameState() {
-            document.getElementById('game-fields').innerHTML = "";
-            document.getElementById('timer-banner').classList.add('hidden');
-            document.getElementById('btn-basta').disabled = false;
-            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
         }
     </script>
 </body>
