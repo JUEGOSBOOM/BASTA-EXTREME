@@ -150,7 +150,118 @@
             const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             let cycles = 0;
             let int = setInterval(() => {
-                db
+                db.ref(`rooms/${rId}/letter`).set(abc[Math.floor(Math.random()*abc.length)]);
+                if(++cycles > 10) {
+                    clearInterval(int);
+                    db.ref(`rooms/${rId}`).update({ status: 'playing', bastaCount: 0 });
+                    db.ref(`rooms/${rId}/players`).once('value', s => {
+                        s.forEach(p => db.ref(`rooms/${rId}/players/${p.key}/basta`).set(false));
+                    });
+                }
+            }, 100);
+        }
+
+        function renderGame(data) {
+            const area = document.getElementById('game-fields');
+            if(area.innerHTML === "") {
+                data.categories.forEach(c => {
+                    area.innerHTML += `<div><label>${c}</label><input type="text" class="in-word" data-cat="${c}"></div>`;
+                });
+            }
+            document.getElementById('btn-basta').innerText = `¡BASTA! (${data.bastaCount || 0}/${Object.keys(data.players).length})`;
+        }
+
+        function pressBasta() {
+            console.log("Basta presionado por:", myName);
+            db.ref(`rooms/${rId}/players/${myName}/basta`).set(true).then(() => {
+                db.ref(`rooms/${rId}`).once('value', s => {
+                    const d = s.val();
+                    const count = Object.values(d.players).filter(p => p.basta).length;
+                    db.ref(`rooms/${rId}/bastaCount`).set(count);
+                    
+                    if(count === 1 && d.status !== 'timer') {
+                        db.ref(`rooms/${rId}/status`).set('timer');
+                    }
+                    if(count >= Object.keys(d.players).length) {
+                        stopTimerAndEnd();
+                    }
+                });
+            });
+        }
+
+        function startLocalTimer(data) {
+            renderGame(data);
+            if(timerInterval) return; 
+            document.getElementById('timer-banner').classList.remove('hidden');
+            let sec = 20;
+            timerInterval = setInterval(() => {
+                document.getElementById('timer-num').innerText = --sec;
+                if(sec <= 0) stopTimerAndEnd();
+            }, 1000);
+        }
+
+        function stopTimerAndEnd() {
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            document.getElementById('timer-banner').classList.add('hidden');
+            document.getElementById('basta-big').classList.remove('hidden');
+            
+            let ans = {};
+            document.querySelectorAll('.in-word').forEach(i => ans[i.dataset.cat] = i.value || "---");
+            db.ref(`rooms/${rId}/answers/${myName}`).set(ans);
+
+            setTimeout(() => {
+                document.getElementById('basta-big').classList.add('hidden');
+                if(isAdmin) db.ref(`rooms/${rId}`).update({ status: 'voting', currIdx: 0 });
+            }, 2000);
+        }
+
+        function renderVoting(data) {
+            const cat = data.categories[data.currIdx];
+            document.getElementById('vote-cat-label').innerText = "CATEGORÍA: " + cat;
+            if(isAdmin) document.getElementById('admin-next-cat').classList.remove('hidden');
+            const area = document.getElementById('vote-area');
+            area.innerHTML = '';
+            if(!data.answers) return;
+            Object.keys(data.answers).forEach(p => {
+                area.innerHTML += `
+                    <div class="vote-card">
+                        <h3>${p}</h3>
+                        <p>"${data.answers[p][cat]}"</p>
+                        <button onclick="db.ref('rooms/${rId}/players/${p}/totalScore').transaction(s => (s||0)+100)">DAR 100 PTS</button>
+                    </div>`;
+            });
+        }
+
+        function processVoteCategory() {
+            db.ref(`rooms/${rId}`).once('value', s => {
+                const d = s.val();
+                if(d.currIdx < d.categories.length - 1) {
+                    db.ref(`rooms/${rId}/currIdx`).set(d.currIdx + 1);
+                } else {
+                    db.ref(`rooms/${rId}/status`).set('podium');
+                }
+            });
+        }
+
+        function renderPodium(data) {
+            const sorted = Object.keys(data.players).sort((a,b) => data.players[b].totalScore - data.players[a].totalScore);
+            document.getElementById('podium-list').innerHTML = sorted.map(p => `<div>${p}: ${data.players[p].totalScore} pts</div>`).join('');
+            if(isAdmin) document.getElementById('admin-replay').classList.remove('hidden');
+        }
+
+        function resetForNewRound() {
+            db.ref(`rooms/${rId}`).update({ status: 'lobby', answers: null, bastaCount: 0, currIdx: 0 });
+        }
+
+        function resetGameState() {
+            document.getElementById('game-fields').innerHTML = "";
+            document.getElementById('timer-banner').classList.add('hidden');
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        }
+    </script>
+</body>
+</html>
+
 
 
 
