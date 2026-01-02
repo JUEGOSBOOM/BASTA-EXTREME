@@ -159,17 +159,10 @@
                 const data = snap.val(); if(!data) return;
                 if(data.letter) document.getElementById('game-letter').innerText = data.letter;
 
-                // DETECCIÓN DE TODOS BASTA PARA PARAR CRONÓMETRO
-                const totalPlayers = Object.keys(data.players || {}).length;
-                if (data.bastaCount >= totalPlayers && data.status === 'timer') {
-                    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-                    stopTimerAndEnd();
-                }
-
+                // --- FRENO DE SEGURIDAD DEL CRONÓMETRO ---
                 if (data.status !== 'timer' && data.status !== 'playing') {
-                    document.getElementById('timer-banner').classList.add('hidden');
-                    document.getElementById('basta-big').classList.add('hidden');
                     if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                    document.getElementById('timer-banner').classList.add('hidden');
                 }
 
                 if(data.status === 'lobby') { renderLobby(data); resetGameState(); }
@@ -248,8 +241,20 @@
             db.ref(`rooms/${rId}`).once('value', s => {
                 const d = s.val();
                 let count = Object.values(d.players).filter(p => p.basta).length;
+                let total = Object.keys(d.players).length;
+                
                 db.ref(`rooms/${rId}/bastaCount`).set(count);
-                if(count === 1 && d.status !== 'timer') db.ref(`rooms/${rId}/status`).set('timer');
+
+                // Si soy el primero, inicio el estado timer
+                if(count === 1 && d.status !== 'timer') {
+                    db.ref(`rooms/${rId}/status`).set('timer');
+                }
+                
+                // SI TODOS PUSIERON BASTA, FORZAMOS FIN DEL TIEMPO
+                if(count >= total) {
+                    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                    stopTimerAndEnd();
+                }
             });
         }
 
@@ -270,17 +275,21 @@
         }
 
         function stopTimerAndEnd() {
+            // DETENER INTERVALO INMEDIATAMENTE
             if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             document.getElementById('timer-banner').classList.add('hidden');
+            
             const bastaCartel = document.getElementById('basta-big');
             bastaCartel.classList.remove('hidden');
             bastaCartel.classList.add('basta-anim');
+            
             let ans = {};
             document.querySelectorAll('.in-word').forEach(i => {
                 ans[i.dataset.cat] = i.value || "---";
                 i.value = ""; 
             });
             db.ref(`rooms/${rId}/answers/${myName}`).set(ans);
+            
             setTimeout(() => {
                 bastaCartel.classList.add('hidden');
                 bastaCartel.classList.remove('basta-anim'); 
@@ -384,4 +393,3 @@
     </script>
 </body>
 </html>
-
