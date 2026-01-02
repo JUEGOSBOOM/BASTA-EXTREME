@@ -269,17 +269,20 @@ function init() {
             });
         }
 
-        function startLocalTimer(data) {
-            renderGame(data);
-            if(timerInterval) return;
-            document.getElementById('timer-banner').classList.remove('hidden');
-            let sec = 20;
-            timerInterval = setInterval(() => {
-                sec--;
-                document.getElementById('timer-num').innerText = sec;
-                if(sec <= 0) stopTimerAndEnd();
-            }, 1000);
-        }
+       function startLocalTimer(data) {
+    renderGame(data);
+    if(timerInterval) return; // Evita que se creen dos relojes a la vez
+    
+    const banner = document.getElementById('timer-banner');
+    banner.classList.remove('hidden');
+    
+    let sec = 20;
+    timerInterval = setInterval(() => {
+        sec--;
+        document.getElementById('timer-num').innerText = sec;
+        if(sec <= 0) stopTimerAndEnd();
+    }, 1000);
+}
 
 
 
@@ -426,16 +429,24 @@ function stopTimerAndEnd() {
 
         
 
-
 function resetGameState() {
+    // 1. Limpia los campos de juego
     document.getElementById('game-fields').innerHTML = "";
+    
+    // 2. Apaga y esconde el banner del reloj
     document.getElementById('timer-banner').classList.add('hidden');
-    document.getElementById('basta-big').classList.add('hidden');
+    document.getElementById('timer-num').innerText = "20";
+    
+    // 3. Detiene cualquier contador interno
+    if(timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    
+    // 4. Limpia votos y carteles
     mySelectedVotes = {};
-    if(timerInterval) clearInterval(timerInterval);
-    timerInterval = null;
+    document.getElementById('basta-big').classList.add('hidden');
 }
-
             
             
         }
@@ -443,3 +454,4 @@ function resetGameState() {
 </body>
 
 </html>
+
