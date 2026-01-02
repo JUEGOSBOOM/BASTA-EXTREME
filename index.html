@@ -1,8 +1,8 @@
 
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
+<head>  
+    <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BASTA EXTREME - RULETA VISUAL</title>
     <link rel="icon" type="image/png" href="BASTA.png">
@@ -158,26 +158,46 @@
             init();
         }
 
-        function init() {
-            db.ref(`rooms/${rId}/players/${myName}`).set({ avatar: myAvatar, totalScore: 0, basta: false });
-            document.getElementById('scr-home').classList.add('hidden');
-            document.getElementById('scr-lobby').classList.remove('hidden');
-            document.getElementById('room-id-view').innerText = rId;
-            if(isAdmin) document.getElementById('admin-tools').classList.remove('hidden');
 
-            db.ref('rooms/'+rId).on('value', snap => {
-                const data = snap.val(); if(!data) return;
-                
-                if(data.letter) document.getElementById('game-letter').innerText = data.letter;
 
-                if(data.status === 'lobby') { renderLobby(data); resetGameState(); }
-                if(data.status === 'playing') renderGame(data);
-                if(data.status === 'timer') startLocalTimer(data);
-                if(data.status === 'voting') renderVoting(data);
-                if(data.status === 'podium') renderPodium(data);
-            });
+
+
+        
+function init() {
+    db.ref(`rooms/${rId}/players/${myName}`).set({ avatar: myAvatar, totalScore: 0, basta: false });
+    document.getElementById('scr-home').classList.add('hidden');
+    document.getElementById('scr-lobby').classList.remove('hidden');
+    document.getElementById('room-id-view').innerText = rId;
+    if(isAdmin) document.getElementById('admin-tools').classList.remove('hidden');
+
+    db.ref('rooms/'+rId).on('value', snap => {
+        const data = snap.val(); if(!data) return;
+        
+        if(data.letter) document.getElementById('game-letter').innerText = data.letter;
+
+        // --- LIMPIEZA AUTOMÁTICA DE RELOJ Y CARTEL ---
+        if (data.status !== 'timer' && data.status !== 'playing') {
+            document.getElementById('timer-banner').classList.add('hidden');
+            document.getElementById('basta-big').classList.add('hidden');
+            document.getElementById('basta-big').classList.remove('basta-anim');
+            if(timerInterval) { 
+                clearInterval(timerInterval); 
+                timerInterval = null; 
+            }
         }
 
+        if(data.status === 'lobby') { renderLobby(data); resetGameState(); }
+        if(data.status === 'playing') renderGame(data);
+        if(data.status === 'timer') startLocalTimer(data);
+        if(data.status === 'voting') renderVoting(data);
+        if(data.status === 'podium') renderPodium(data);
+    });
+}
+
+
+
+
+        
         function renderLobby(data) {
             document.getElementById('players-lobby').innerHTML = Object.keys(data.players).map(p => `${data.players[p].avatar} ${p}`).join(' | ');
             const cDiv = document.getElementById('cat-container');
@@ -263,35 +283,36 @@
 
 
 
-     function stopTimerAndEnd() {
-    // 1. Detenemos el reloj inmediatamente
+        
+
+function stopTimerAndEnd() {
     if(timerInterval) { 
         clearInterval(timerInterval); 
         timerInterval = null; 
     }
     document.getElementById('timer-banner').classList.add('hidden');
     
-    // 2. ACTIVAMOS EL CARTEL CON ANIMACIÓN
     const bastaCartel = document.getElementById('basta-big');
     bastaCartel.classList.remove('hidden');
     bastaCartel.classList.add('basta-anim');
     
-    // 3. Guardamos las respuestas
     let ans = {};
     document.querySelectorAll('.in-word').forEach(i => {
         ans[i.dataset.cat] = i.value || "---";
+        i.value = ""; // Limpia el cuadro para la siguiente letra
     });
     db.ref(`rooms/${rId}/answers/${myName}`).set(ans);
 
-    // 4. ESPERA DE 1 SEGUNDO Y SALTO A VOTACIÓN
     setTimeout(() => {
         bastaCartel.classList.add('hidden');
         bastaCartel.classList.remove('basta-anim'); 
         if(isAdmin) {
             db.ref(`rooms/${rId}`).update({ status: 'voting', currIdx: 0 });
         }
-    }, 1200); // 1.2 segundos es el tiempo perfecto para la animación
+    }, 1500); 
 }
+
+        
 
 
 
@@ -403,12 +424,22 @@
             db.ref(`rooms/${rId}`).update({ status: 'lobby', answers: null, votes: null, bastaCount: 0, currIdx: 0, letter: '?' });
         }
 
-        function resetGameState() {
-            document.getElementById('game-fields').innerHTML = '';
-            mySelectedVotes = {};
-            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-            document.getElementById('timer-banner').classList.add('hidden');
+        
+
+
+function resetGameState() {
+    document.getElementById('game-fields').innerHTML = "";
+    document.getElementById('timer-banner').classList.add('hidden');
+    document.getElementById('basta-big').classList.add('hidden');
+    mySelectedVotes = {};
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+}
+
+            
+            
         }
     </script>
 </body>
+
 </html>
